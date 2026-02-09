@@ -34,4 +34,14 @@ contract SpidexFactory {
 
         emit SpidexFactory__PairCreated(_pair, token0, token1);
     }
+
+    function setFeeTo(address _feeReceiver) external {
+        require(msg.sender == feeReceiveSetter,"Unauthourized");
+        feeReceiver = _feeReceiver;
+    }
+
+    function setFeeReceiverSetter(address _feeReceiveSetter) external {
+        require(msg.sender == feeReceiveSetter,"Unauthourized");
+        feeReceiveSetter = _feeReceiveSetter;
+    }
 }
