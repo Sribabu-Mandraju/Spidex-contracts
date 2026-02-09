@@ -36,12 +36,12 @@ contract SpidexFactory {
     }
 
     function setFeeTo(address _feeReceiver) external {
-        require(msg.sender == feeReceiveSetter,"Unauthourized");
+        require(msg.sender == feeReceiveSetter, "Unauthourized");
         feeReceiver = _feeReceiver;
     }
 
     function setFeeReceiverSetter(address _feeReceiveSetter) external {
-        require(msg.sender == feeReceiveSetter,"Unauthourized");
+        require(msg.sender == feeReceiveSetter, "Unauthourized");
         feeReceiveSetter = _feeReceiveSetter;
     }
 }
