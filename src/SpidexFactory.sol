@@ -6,7 +6,7 @@ import {SpidexPair} from "./SpidexPair.sol";
 contract SpidexFactory {
     event SpidexFactory__PairCreated(address pair, address tokenA, address tokenB);
 
-    mapping(address token0 => mapping(address token1 => address pair)) public pair;
+    mapping(address  => mapping(address  => address )) public pair;
     address[] public pairs;
 
     constructor() {}
@@ -27,5 +27,9 @@ contract SpidexFactory {
         pairs.push(_pair);
 
         emit SpidexFactory__PairCreated(_pair, token0, token1);
+    }
+
+    function getPair(address tokenA,address tokenB) external view returns (address){
+        return pair[tokenA][tokenB];
     }
 }
