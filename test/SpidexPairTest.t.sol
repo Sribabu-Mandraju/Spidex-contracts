@@ -116,19 +116,18 @@ contract SpidexPairTest is Test {
         console.log("total supply :", totalSupply);
         assertEq(totalSupply - userLpBalance, 10 ** 3);
 
-        IERC20(address(mkrDai)).approve(address(mkrDai),1000 ether);
+        IERC20(address(mkrDai)).approve(address(mkrDai), 1000 ether);
         uint256 balanceBefore = IERC20(address(mkrDai)).balanceOf(address(mkrDai));
-        console.log("balance before:",balanceBefore);
+        console.log("balance before:", balanceBefore);
         mkrDai.transfer(address(mkrDai), 1000 ether);
 
         mkrDai.burn(user);
         uint256 balance = IERC20(address(mkrDai)).balanceOf(address(mkrDai));
-        console.log("balance after:",balance);
+        console.log("balance after:", balance);
         uint256 liquidityAfter = mkrDai.balanceOf(user);
-        assertEq(userLpBalance  - liquidityAfter, 1000 ether);
+        assertEq(userLpBalance - liquidityAfter, 1000 ether);
         vm.stopPrank();
     }
-
 
     // function test_swap() external {
     //     vm.startPrank(user2);
@@ -140,8 +139,6 @@ contract SpidexPairTest is Test {
     //     }
     //     vm.stopPrank();
     // }
-
-    
 
     modifier mint() {
         vm.startPrank(user);
