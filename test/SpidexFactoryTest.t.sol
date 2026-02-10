@@ -39,7 +39,7 @@ contract SpidexFactoryTest is Test {
 
     function test_deployed_pair_contract_address() public view {
         address deployedPairContractAddress = SpidexLibrary.computePair(address(usdc), address(dai), address(factory));
-        assertEq(deployedPairContractAddress,address(usdcDai));
+        assertEq(deployedPairContractAddress, address(usdcDai));
     }
 
     function test_deploying_already_existed_pair_contract() public {

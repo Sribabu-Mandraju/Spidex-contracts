@@ -9,13 +9,13 @@ import {IERC20} from "../src/interfaces/IERC20.sol";
 import "../src/libraries/SpidexLibrary.sol";
 import "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
-
 contract SpidexPairTest is Test {
     using Math for uint256;
     using SpidexLibrary for AddressType;
 
     address owner = makeAddr("owner");
     address user = makeAddr("user");
+    address user2 = makeAddr("user2");
     address feeReceiver = makeAddr("feeReceiver");
     Token mkr;
     Token dai;
@@ -41,16 +41,15 @@ contract SpidexPairTest is Test {
 
     function test_pair_factory_address() public view {
         address _factory = mkrDai.factory();
-        assertEq(_factory,address(factory));
+        assertEq(_factory, address(factory));
     }
 
     function test_initial_reserveBalance() public view {
         uint112 _res0 = mkrDai.reserve0();
         uint112 _res1 = mkrDai.reserve1();
-        assertEq(_res0,0);
-        assertEq(_res1,0);
+        assertEq(_res0, 0);
+        assertEq(_res1, 0);
     }
-
 
     function test_mint() public {
         vm.startPrank(user);
@@ -63,28 +62,27 @@ contract SpidexPairTest is Test {
         dai.transfer(address(mkrDai), initialPoolSupply);
         // checking total supply before mint
         uint256 _ts = mkrDai.totalSupply();
-        assertEq(_ts,0);
+        assertEq(_ts, 0);
         mkrDai.mint(user);
-        
-        (uint112 _res0,uint112 _res1,) = mkrDai.getReserves();
+
+        (uint112 _res0, uint112 _res1,) = mkrDai.getReserves();
         // checking reserves
-        console.log("pool supply after mint _res0 :",_res0);
-        console.log("pool supply after mint _res1 :",_res1);
-        assertEq(_res0,initialPoolSupply);
-        assertEq(_res1,initialPoolSupply);
+        console.log("pool supply after mint _res0 :", _res0);
+        console.log("pool supply after mint _res1 :", _res1);
+        assertEq(_res0, initialPoolSupply);
+        assertEq(_res1, initialPoolSupply);
         uint256 expectedLiquidity = Math.sqrt(uint256(_res0) * uint256(_res1));
-        uint256 totalSupply  = mkrDai.totalSupply(); 
-        assertEq(expectedLiquidity,totalSupply);
+        uint256 totalSupply = mkrDai.totalSupply();
+        assertEq(expectedLiquidity, totalSupply);
         uint256 currentTime = block.timestamp;
         vm.warp(currentTime + 365 days);
         uint256 price0Cummulative = mkrDai.price0CummulativeLast();
         uint256 price1Cummulative = mkrDai.price1CummulativeLast();
-        console.log("price 0 cummulative :",price0Cummulative);
-        console.log("price 1 cummulative :",price1Cummulative);
+        console.log("price 0 cummulative :", price0Cummulative);
+        console.log("price 1 cummulative :", price1Cummulative);
         // assertEq(price0Cummulative,1);
         // assertEq(price1Cummulative,1);
         vm.stopPrank();
-
     }
 
     function test_mint_after_pool_initialised() public mint {
@@ -100,19 +98,50 @@ contract SpidexPairTest is Test {
         mkr.transfer(address(mkrDai), secondSupply);
         dai.transfer(address(mkrDai), secondSupply);
 
-        
         mkrDai.mint(user);
 
         uint256 price0Cummulative = mkrDai.price0CummulativeLast();
         uint256 price1Cummulative = mkrDai.price1CummulativeLast();
-        console.log("price 0 cummulative :",price0Cummulative);
-        console.log("price 1 cummulative :",price1Cummulative);
+        console.log("price 0 cummulative :", price0Cummulative);
+        console.log("price 1 cummulative :", price1Cummulative);
 
         vm.stopPrank();
     }
 
-    
+    function test_burn() public mint {
+        vm.startPrank(user);
+        uint256 userLpBalance = IERC20(address(mkrDai)).balanceOf(user);
+        console.log("user shares :", userLpBalance);
+        uint256 totalSupply = mkrDai.totalSupply();
+        console.log("total supply :", totalSupply);
+        assertEq(totalSupply - userLpBalance, 10 ** 3);
 
+        IERC20(address(mkrDai)).approve(address(mkrDai),1000 ether);
+        uint256 balanceBefore = IERC20(address(mkrDai)).balanceOf(address(mkrDai));
+        console.log("balance before:",balanceBefore);
+        mkrDai.transfer(address(mkrDai), 1000 ether);
+
+        mkrDai.burn(user);
+        uint256 balance = IERC20(address(mkrDai)).balanceOf(address(mkrDai));
+        console.log("balance after:",balance);
+        uint256 liquidityAfter = mkrDai.balanceOf(user);
+        assertEq(userLpBalance  - liquidityAfter, 1000 ether);
+        vm.stopPrank();
+    }
+
+
+    // function test_swap() external {
+    //     vm.startPrank(user2);
+    //     dai.mint(user2,1000 ether);
+    //     dai.approve(address(mkrDai),1000 ether);
+    //     mkrDai.transfer(address(mkrDai), 1000 ether);
+    //     if (address(dai) < address (mkr)) {
+    //         mkrDai.swap()
+    //     }
+    //     vm.stopPrank();
+    // }
+
+    
 
     modifier mint() {
         vm.startPrank(user);
@@ -128,6 +157,4 @@ contract SpidexPairTest is Test {
         vm.stopPrank();
         _;
     }
-
-
 }
