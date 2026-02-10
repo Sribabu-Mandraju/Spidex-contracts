@@ -6,6 +6,8 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/IUniswapV2Callee.sol";
 import "openzeppelin-contracts/contracts/utils/math/Math.sol";
 import "./libraries/UQ112x112.sol";
+import { console} from "forge-std/Test.sol";
+
 
 contract SpidexPair is SpidexERC20 {
     using Math for uint256;
@@ -38,12 +40,11 @@ contract SpidexPair is SpidexERC20 {
     uint112 public reserve0;
     uint112 public reserve1;
 
-    uint112 public price0CummulativeLast;
-    uint112 public price1CummulativeLast;
+    uint256 public price0CummulativeLast;
+    uint256 public price1CummulativeLast;
     uint32 public blockTimeStampLast;
 
     uint256 public klast;
-    bool public feeOn;
 
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes("transfer(address,uint256)")));
 
@@ -100,6 +101,7 @@ contract SpidexPair is SpidexERC20 {
         }
         require(liquidity > 0, Spidex__InsufficientLiquidity());
         _mint(to, liquidity);
+        _update(balance0, balance1, reserveA, reserveB);
         emit Spidex__Mint(to, liquidity);
     }
 
@@ -181,8 +183,11 @@ contract SpidexPair is SpidexERC20 {
         uint32 timeElapsed = blockTimeStamp - blockTimeStampLast;
 
         if (timeElapsed > 0 && _reserve0 != 0 && _reserve1 != 0) {
-            price0CummulativeLast += uint112(UQ112x112.encode(_reserve1).uqdiv(_reserve0)) * timeElapsed;
-            price1CummulativeLast += uint112(UQ112x112.encode(_reserve0).uqdiv(_reserve1)) * timeElapsed;
+            price0CummulativeLast += uint256(UQ112x112.encode(_reserve1).uqdiv(_reserve0)) * timeElapsed;
+            price1CummulativeLast += uint256(UQ112x112.encode(_reserve0).uqdiv(_reserve1)) * timeElapsed;
+            console.log("price0 cumm :",price0CummulativeLast);
+            console.log("price1 cumm:",price1CummulativeLast);
+            console.log("time elapsed :",timeElapsed);
         }
         reserve0 = uint112(balance0);
         reserve1 = uint112(balance1);
