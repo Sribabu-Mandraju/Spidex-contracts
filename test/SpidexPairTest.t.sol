@@ -19,13 +19,12 @@ contract SpidexPairTest is Test {
     address owner = makeAddr("owner");
     address user = makeAddr("user");
     address user2 = makeAddr("user2");
-    
+
     address feeReceiver = makeAddr("feeReceiver");
     Token mkr;
     Token dai;
     SpidexPair mkrDai;
     MockWETH weth;
-    
 
     SpidexFactory factory;
     SpidexRouter router;
@@ -36,7 +35,7 @@ contract SpidexPairTest is Test {
         dai = new Token("DAI-Token", "DAI");
         factory = new SpidexFactory();
         weth = new MockWETH();
-        router = new SpidexRouter(address(factory),address(weth));
+        router = new SpidexRouter(address(factory), address(weth));
         mkrDai = SpidexPair(factory.createPair(address(mkr), address(dai)));
         vm.stopPrank();
     }
@@ -141,16 +140,16 @@ contract SpidexPairTest is Test {
     function test_swap() external mint {
         vm.startPrank(user2);
         uint256 amountIn = 100 ether;
-        dai.mint(user2,amountIn);
+        dai.mint(user2, amountIn);
         uint256 userBalance = IERC20(address(dai)).balanceOf(user2);
-        assertEq(userBalance,amountIn,"insufficient amount in");
+        assertEq(userBalance, amountIn, "insufficient amount in");
         dai.approve(address(router), amountIn);
-        (uint112 _resIn,uint112 _resOut) = SpidexLibrary.getReserves(address(factory), address(dai), address(mkr));
+        (uint112 _resIn, uint112 _resOut) = SpidexLibrary.getReserves(address(factory), address(dai), address(mkr));
         uint256 amountOutMin = SpidexLibrary.getAmountOut(amountIn, _resIn, _resOut);
         address[] memory path = new address[](2);
         path[0] = address(dai);
         path[1] = address(mkr);
-        router.swapExactTokensForTokens(amountIn, amountOutMin,path,user2, block.timestamp);
+        router.swapExactTokensForTokens(amountIn, amountOutMin, path, user2, block.timestamp);
         vm.stopPrank();
     }
 

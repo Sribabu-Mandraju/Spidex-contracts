@@ -68,7 +68,6 @@ contract SpidexRouter {
         require(amounts[path.length - 1] >= amountOutMin, SpidexRouter__InsufficientAmount());
         _safeTransferFrom(path[0], msg.sender, SpidexLibrary.computePair(path[0], path[1], factory), amounts[0]);
         _swap(amounts, path, to);
-
     }
 
     function swapTokensForExactTokens(
@@ -79,7 +78,7 @@ contract SpidexRouter {
         uint256 deadline
     ) external ensure(deadline) returns (uint256[] memory amounts) {
         amounts = SpidexLibrary.getAmountsIn(factory, amountOut, path);
-        require(amountInMax >= amounts[0],SpidexRouter__InsufficientAmount());
+        require(amountInMax >= amounts[0], SpidexRouter__InsufficientAmount());
         _safeTransferFrom(path[0], msg.sender, SpidexLibrary.computePair(path[0], path[1], factory), amounts[0]);
         _swap(amounts, path, to);
     }

@@ -29,7 +29,9 @@ contract SpidexPair is SpidexERC20 {
     /////////////////////////////////////////////////
     event SpidexPair__Mint(address to, uint256 amount);
     event SpidexPair__Burn(address to, uint256 liquidity);
-    event SpidexPair__Swap(address sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out1);
+    event SpidexPair__Swap(
+        address sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out1
+    );
     event SpidexPair__ReserveUpdated(uint112 _reserve0, uint112 _reserve1, uint32 _blockTimeStampLast);
 
     address public factory;
