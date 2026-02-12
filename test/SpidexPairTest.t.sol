@@ -153,6 +153,104 @@ contract SpidexPairTest is Test {
         vm.stopPrank();
     }
 
+    function test_price_movement_after_swap() public mint swap {
+        address tokenIn = address(dai);
+        address tokenOut = address(mkr);
+        (uint112 _resIn, uint112 _resOut) = SpidexLibrary.getReserves(address(factory), tokenIn, tokenOut);
+        uint256 daiPrice = (uint256(_resOut) * 1e18) / _resIn;
+        uint256 mkrPrice = (uint256(_resIn) * 1e18) / _resOut;
+
+        console.log("dai price:", daiPrice);
+        console.log("mkr price:", mkrPrice);
+    }
+
+    function test_price_movement_after_swap_more_amount() public mint swap2 {
+        address tokenIn = address(dai);
+        address tokenOut = address(mkr);
+        (uint112 _resIn, uint112 _resOut) = SpidexLibrary.getReserves(address(factory), tokenIn, tokenOut);
+        uint256 daiPrice = (uint256(_resOut) * 1e18) / _resIn;
+        uint256 mkrPrice = (uint256(_resIn) * 1e18) / _resOut;
+
+        console.log("dai price:", daiPrice);
+        console.log("mkr price:", mkrPrice);
+    }
+
+    function test_add_liquidity() public mint {
+        vm.startPrank(user2);
+        address tokenA = address(dai);
+        address tokenB = address(mkr);
+        (uint112 _res0, uint112 _res1) = SpidexLibrary.getReserves(address(factory), tokenA, tokenB);
+        uint256 _amountA = 1000 ether;
+        uint256 _amountB = SpidexLibrary.quote(_amountA, _res0, _res1);
+        console.log("amount A :", _amountA);
+        console.log("amount B :", _amountB);
+        dai.mint(user2, _amountA);
+        mkr.mint(user2, _amountB);
+        dai.approve(address(router), _amountA);
+        mkr.approve(address(router), _amountB);
+        (uint256 amountA, uint256 amountB, uint256 liquidity) =
+            router.addLiquidity(tokenA, tokenB, _amountA, _amountB, _amountA, _amountB, user2, block.timestamp);
+        console.log("amount A added :", amountA);
+        console.log("amount B added :", amountB);
+        console.log("liquidity :", liquidity);
+        vm.stopPrank();
+    }
+
+    function test_add_liquidity_after_some_swap() public mint swap2 {
+        vm.startPrank(user2);
+        address tokenA = address(dai);
+        address tokenB = address(mkr);
+        (uint112 _res0, uint112 _res1) = SpidexLibrary.getReserves(address(factory), tokenA, tokenB);
+        uint256 _amountA = 1000 ether;
+        uint256 _amountB = SpidexLibrary.quote(_amountA, _res0, _res1);
+        console.log("reserve A ", _res0);
+        console.log("reserve B :", _res1);
+        console.log("amount A :", _amountA);
+        console.log("amount B :", _amountB);
+        dai.mint(user2, _amountA);
+        mkr.mint(user2, _amountB);
+        dai.approve(address(router), _amountA);
+        mkr.approve(address(router), _amountB);
+        (uint256 amountA, uint256 amountB, uint256 liquidity) =
+            router.addLiquidity(tokenA, tokenB, _amountA, _amountB, _amountA, _amountB, user2, block.timestamp);
+        console.log("amount A added :", amountA);
+        console.log("amount B added :", amountB);
+        console.log("liquidity :", liquidity);
+        vm.stopPrank();
+    }
+
+    modifier swap() {
+        vm.startPrank(user2);
+        uint256 amountIn = 100 ether;
+        dai.mint(user2, amountIn);
+        uint256 userBalance = IERC20(address(dai)).balanceOf(user2);
+        dai.approve(address(router), amountIn);
+        (uint112 _resIn, uint112 _resOut) = SpidexLibrary.getReserves(address(factory), address(dai), address(mkr));
+        uint256 amountOutMin = SpidexLibrary.getAmountOut(amountIn, _resIn, _resOut);
+        address[] memory path = new address[](2);
+        path[0] = address(dai);
+        path[1] = address(mkr);
+        router.swapExactTokensForTokens(amountIn, amountOutMin, path, user2, block.timestamp);
+        vm.stopPrank();
+        _;
+    }
+
+    modifier swap2() {
+        vm.startPrank(user2);
+        uint256 amountIn = 50_000 ether;
+        dai.mint(user2, amountIn);
+        uint256 userBalance = IERC20(address(dai)).balanceOf(user2);
+        dai.approve(address(router), amountIn);
+        (uint112 _resIn, uint112 _resOut) = SpidexLibrary.getReserves(address(factory), address(dai), address(mkr));
+        uint256 amountOutMin = SpidexLibrary.getAmountOut(amountIn, _resIn, _resOut);
+        address[] memory path = new address[](2);
+        path[0] = address(dai);
+        path[1] = address(mkr);
+        router.swapExactTokensForTokens(amountIn, amountOutMin, path, user2, block.timestamp);
+        vm.stopPrank();
+        _;
+    }
+
     modifier mint() {
         vm.startPrank(user);
         uint256 initialPoolSupply = 100_000 * 1e18;

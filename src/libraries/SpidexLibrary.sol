@@ -110,4 +110,10 @@ library SpidexLibrary {
         (uint112 _reserve0, uint112 _reserve1,) = ISpidexPair(pair).getReserves();
         (_reserveIn, _reserveOut) = inputToken == token0 ? (_reserve0, _reserve1) : (_reserve1, _reserve0);
     }
+
+    function quote(uint256 amountA, uint256 _reserveA, uint256 _reserveB) internal pure returns (uint256 amountB) {
+        require(amountA > 0, "Insufficient_amount");
+        require(_reserveA > 0 && _reserveB > 0, "insufficient reserves");
+        amountB = amountA * _reserveB / _reserveA;
+    }
 }

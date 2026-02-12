@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "./interfaces/IERC20.sol";
 import "./interfaces/ISpidexPair.sol";
 import "./libraries/SpidexLibrary.sol";
+import "./interfaces/ISpidexFactory.sol";
 
 contract SpidexRouter {
     ////////////////////////////////
@@ -81,5 +82,54 @@ contract SpidexRouter {
         require(amountInMax >= amounts[0], SpidexRouter__InsufficientAmount());
         _safeTransferFrom(path[0], msg.sender, SpidexLibrary.computePair(path[0], path[1], factory), amounts[0]);
         _swap(amounts, path, to);
+    }
+
+    function _addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 desiredAmountA,
+        uint256 desiredAmountB,
+        uint256 amountAMin,
+        uint256 amountBMin
+    ) internal returns (uint256 amountA, uint256 amountB) {
+        address pair = ISpidexFactory(factory).getPair(tokenA, tokenB);
+        if (pair == address(0)) {
+            pair = ISpidexFactory(factory).createPair(tokenA, tokenB);
+        }
+
+        (uint256 _res0, uint256 _res1) = SpidexLibrary.getReserves(factory, tokenA, tokenB);
+
+        if (_res0 == 0 && _res1 == 0) {
+            (amountA, amountB) = (desiredAmountA, desiredAmountB);
+        } else {
+            uint256 amountBOptimal = SpidexLibrary.quote(desiredAmountA, _res0, _res1);
+            if (amountBOptimal <= desiredAmountB) {
+                require(amountBOptimal >= amountBMin, SpidexRouter__InsufficientAmount());
+                (amountA, amountB) = (desiredAmountA, amountBOptimal);
+            } else {
+                uint256 amountAOptimal = SpidexLibrary.quote(desiredAmountB, _res1, _res0);
+                if (amountAOptimal <= desiredAmountA) {
+                    require(amountAOptimal >= amountAMin, SpidexRouter__InsufficientAmount());
+                    (amountA, amountB) = (amountAOptimal, desiredAmountB);
+                }
+            }
+        }
+    }
+
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint256 desiredAmountA,
+        uint256 desiredAmountB,
+        uint256 amountAMin,
+        uint256 amountBMin,
+        address to,
+        uint256 deadline
+    ) external ensure(deadline) returns (uint256 amountA, uint256 amountB, uint256 liquidity) {
+        (amountA, amountB) = _addLiquidity(tokenA, tokenB, desiredAmountA, desiredAmountB, amountAMin, amountBMin);
+        address pair = SpidexLibrary.computePair(tokenA, tokenB, factory);
+        _safeTransferFrom(tokenA, msg.sender, pair, amountA);
+        _safeTransferFrom(tokenB, msg.sender, pair, amountB);
+        liquidity = ISpidexPair(pair).mint(to);
     }
 }
