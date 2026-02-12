@@ -43,8 +43,8 @@ library SpidexLibrary {
         require(amountIn > 0, "Insufficient amount");
         require(_reserveIn > 0 && _reserveOut > 0, "Insufficient liquidity");
         uint256 amountInWithFee = amountIn * 997;
-        uint256 numerator = amountInWithFee * (_reserveIn * 1000);
-        uint256 denominator = amountInWithFee + (_reserveOut * 1000);
+        uint256 numerator = amountInWithFee * (_reserveOut);
+        uint256 denominator = amountInWithFee + (_reserveIn * 1000);
         amountOut = numerator / denominator;
     }
 
@@ -72,8 +72,9 @@ library SpidexLibrary {
     {
         uint256 pathLength = path.length;
         require(pathLength >= 2, "Invalid path");
+        amounts = new uint256[](path.length);
         amounts[0] = amountIn;
-        for (uint256 i = 0; i < pathLength; i++) {
+        for (uint256 i = 0; i < pathLength - 1; i++) {
             (uint112 _resIn, uint112 _resOut) = getReserves(factory, path[i], path[i + 1]);
             amounts[i + 1] = getAmountOut(amounts[i], _resIn, _resOut);
         }
