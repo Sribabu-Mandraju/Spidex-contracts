@@ -134,7 +134,6 @@ contract SpidexRouter {
         liquidity = ISpidexPair(pair).mint(to);
     }
 
-
     function removeLiquidity(
         address tokenA,
         address tokenB,
@@ -143,13 +142,13 @@ contract SpidexRouter {
         uint256 amountBMin,
         address to,
         uint256 deadline
-    ) external ensure(deadline) returns (uint256 amountA,uint256 amountB) {
+    ) external ensure(deadline) returns (uint256 amountA, uint256 amountB) {
         address pair = SpidexLibrary.computePair(tokenA, tokenB, factory);
         _safeTransferFrom(pair, msg.sender, pair, liquidity);
-        (uint256 amount0,uint256 amount1) = ISpidexPair(pair).burn(to);
+        (uint256 amount0, uint256 amount1) = ISpidexPair(pair).burn(to);
         (address token0,) = SpidexLibrary.sortTokens(tokenA, tokenB);
-        (amountA,amountB) = token0 == tokenA ? (amount0,amount1) : (amount1,amount0);
-        require(amountAMin <= amountA,SpidexRouter__InsufficientLiquidity());
-        require(amountBMin <= amountB,SpidexRouter__InsufficientLiquidity());
+        (amountA, amountB) = token0 == tokenA ? (amount0, amount1) : (amount1, amount0);
+        require(amountAMin <= amountA, SpidexRouter__InsufficientLiquidity());
+        require(amountBMin <= amountB, SpidexRouter__InsufficientLiquidity());
     }
 }
